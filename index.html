@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>德州扑克发牌游戏</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a3d07, #0d5e08);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            width: 100%;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+            background: linear-gradient(to right, #ffcc00, #fff);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: 2px;
+        }
+        
+        .game-area {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            border: 3px solid rgba(255, 215, 0, 0.5);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+            margin-bottom: 30px;
+        }
+        
+        .game-info {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 15px 25px;
+            margin-bottom: 25px;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 2px solid rgba(255, 215, 0, 0.5);
+        }
+        
+        .cards-left {
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .cards-left i {
+            color: #ffcc00;
+        }
+        
+        .game-state {
+            font-size: 1.1rem;
+            background: rgba(255, 215, 0, 0.2);
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        
+        .card-display-area {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            padding: 30px;
+            min-height: 250px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            margin: 20px 0;
+        }
+        
+        .cards-row {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            min-height: 180px;
+        }
+        
+        .card {
+            width: 120px;
+            height: 168px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            background: #fff;
+        }
+        
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.5);
+        }
+        
+        .card-back {
+            background: linear-gradient(45deg, #c00, #900);
+            color: gold;
+            font-size: 3rem;
+        }
+        
+        .card.red {
+            color: #d40000;
+        }
+        
+        .card.black {
+            color: #222;
+        }
+        
+        .card-value {
+            position: absolute;
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+        
+        .top-left {
+            top: 10px;
+            left: 10px;
+        }
+        
+        .bottom-right {
+            bottom: 10px;
+            right: 10px;
+            transform: rotate(180deg);
+        }
+        
+        .card-suit {
+            font-size: 4rem;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 20px;
+            margin: 10px 0 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .btn {
+            padding: 16px 32px;
+            font-size: 1.2rem;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .deal-hand {
+            background: linear-gradient(to right, #ff9900, #ffcc00);
+            color: #222;
+        }
+        
+        .deal-community {
+            background: linear-gradient(to right, #009900, #00cc00);
+            color: white;
+        }
+        
+        .restart {
+            background: linear-gradient(to right, #cc0000, #ff3300);
+            color: white;
+        }
+        
+        .card-placeholder {
+            width: 120px;
+            height: 168px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 3rem;
+        }
+        
+        .instructions {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            width: 100%;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            text-align: center;
+        }
+        
+        .instructions h3 {
+            color: #ffcc00;
+            margin-bottom: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .card {
+                width: 80px;
+                height: 112px;
+            }
+            
+            .card-placeholder {
+                width: 80px;
+                height: 112px;
+            }
+            
+            .card-suit {
+                font-size: 2.5rem;
+            }
+            
+            .card-value {
+                font-size: 1.2rem;
+            }
+            
+            .card-back {
+                font-size: 2rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .cards-row {
+                gap: 10px;
+            }
+            
+            .card {
+                width: 60px;
+                height: 84px;
+            }
+            
+            .card-placeholder {
+                width: 60px;
+                height: 84px;
+            }
+            
+            .card-suit {
+                font-size: 1.8rem;
+            }
+            
+            .card-back {
+                font-size: 1.5rem;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+            
+            .btn {
+                padding: 12px 24px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-cards"></i> 德州扑克发牌器</h1>
+        </header>
+        
+        <div class="game-area">
+            <div class="game-info">
+                <div class="cards-left">
+                    <i class="fas fa-cards"></i>
+                    <span>剩余卡牌: <span id="cards-count">52</span></span>
+                </div>
+                <div class="game-state" id="game-state">等待游戏开始</div>
+            </div>
+            
+            <div class="card-display-area">
+                <div class="cards-row" id="cards-container">
+                    <div class="card-placeholder"><i class="fas fa-question"></i></div>
+                    <div class="card-placeholder"><i class="fas fa-question"></i></div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button class="btn deal-hand" id="deal-hand-btn">
+                    <i class="fas fa-hand-paper"></i> 发手牌
+                </button>
+                <button class="btn deal-community" id="deal-community-btn" disabled>
+                    <i class="fas fa-club"></i> 发公共牌
+                </button>
+                <button class="btn restart" id="restart-btn">
+                    <i class="fas fa-redo"></i> 重新开始
+                </button>
+            </div>
+        </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // 游戏状态变量
+            let deck = [];
+            let handCards = [];
+            let communityCards = [];
+            let flippedCount = 0;
+            
+            // DOM元素
+            const cardsCountEl = document.getElementById('cards-count');
+            const gameStateEl = document.getElementById('game-state');
+            const cardsContainer = document.getElementById('cards-container');
+            const dealHandBtn = document.getElementById('deal-hand-btn');
+            const dealCommunityBtn = document.getElementById('deal-community-btn');
+            const restartBtn = document.getElementById('restart-btn');
+            
+            // 初始化游戏
+            function initGame() {
+                createDeck();
+                shuffleDeck();
+                handCards = [];
+                communityCards = [];
+                flippedCount = 0;
+                
+                updateUI();
+                gameStateEl.textContent = "已洗牌，等待发牌";
+                dealHandBtn.disabled = false;
+                dealCommunityBtn.disabled = true;
+            }
+            
+            // 创建牌组
+            function createDeck() {
+                deck = [];
+                const suits = ['♠', '♥', '♦', '♣'];
+                const values = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+                
+                for (let suit of suits) {
+                    for (let value of values) {
+                        deck.push({ suit, value });
+                    }
+                }
+            }
+            
+            // 洗牌算法
+            function shuffleDeck() {
+                for (let i = deck.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [deck[i], deck[j]] = [deck[j], deck[i]];
+                }
+            }
+            
+            // 发手牌
+            function dealHandCards() {
+                if (deck.length < 2) {
+                    alert('牌堆中没有足够的牌！');
+                    return;
+                }
+                
+                handCards = [deck.pop(), deck.pop()];
+                communityCards = [];
+                flippedCount = 0;
+                
+                updateUI();
+                gameStateEl.textContent = "已发手牌，请发公共牌";
+                dealCommunityBtn.disabled = false;
+            }
+            
+            // 发公共牌
+            function dealCommunityCard() {
+                if (communityCards.length === 0) {
+                    // 首次发公共牌（5张背面）
+                    if (deck.length < 5) {
+                        alert('牌堆中没有足够的牌！');
+                        return;
+                    }
+                    
+                    // 清除手牌
+                    handCards = [];
+                    
+                    // 生成公共牌
+                    communityCards = [];
+                    for (let i = 0; i < 5; i++) {
+                        communityCards.push(deck.pop());
+                    }
+                    flippedCount = 0;
+                    gameStateEl.textContent = "已发公共牌（背面），点击继续翻开";
+                } else if (flippedCount < 5) {
+                    // 翻开下一张公共牌
+                    flippedCount++;
+                    
+                    if (flippedCount === 5) {
+                        gameStateEl.textContent = "所有公共牌已翻开";
+                        dealCommunityBtn.disabled = true;
+                    } else {
+                        gameStateEl.textContent = `已翻开 ${flippedCount}/5 张公共牌`;
+                    }
+                }
+                
+                updateUI();
+            }
+            
+            // 重置游戏
+            function restartGame() {
+                initGame();
+                gameStateEl.textContent = "游戏已重置，等待发牌";
+            }
+            
+            // 更新UI
+            function updateUI() {
+                // 更新剩余卡牌数
+                cardsCountEl.textContent = deck.length;
+                
+                // 清空牌容器
+                cardsContainer.innerHTML = '';
+                
+                if (handCards.length > 0) {
+                    // 显示手牌
+                    handCards.forEach(card => {
+                        const isRed = card.suit === '♥' || card.suit === '♦';
+                        const cardEl = document.createElement('div');
+                        cardEl.className = `card ${isRed ? 'red' : 'black'}`;
+                        cardEl.innerHTML = `
+                            <div class="card-value top-left">${card.value}</div>
+                            <div class="card-suit">${card.suit}</div>
+                            <div class="card-value bottom-right">${card.value}</div>
+                        `;
+                        cardsContainer.appendChild(cardEl);
+                    });
+                } else if (communityCards.length > 0) {
+                    // 显示公共牌
+                    communityCards.forEach((card, index) => {
+                        const cardEl = document.createElement('div');
+                        
+                        if (index < flippedCount) {
+                            // 已翻开的牌
+                            const isRed = card.suit === '♥' || card.suit === '♦';
+                            cardEl.className = `card ${isRed ? 'red' : 'black'}`;
+                            cardEl.innerHTML = `
+                                <div class="card-value top-left">${card.value}</div>
+                                <div class="card-suit">${card.suit}</div>
+                                <div class="card-value bottom-right">${card.value}</div>
+                            `;
+                        } else {
+                            // 未翻开的牌
+                            cardEl.className = 'card card-back';
+                            cardEl.innerHTML = `<i class="fas fa-crown"></i>`;
+                        }
+                        
+                        cardsContainer.appendChild(cardEl);
+                    });
+                } else {
+                    // 显示占位符
+                    for (let i = 0; i < 2; i++) {
+                        const placeholder = document.createElement('div');
+                        placeholder.className = 'card-placeholder';
+                        placeholder.innerHTML = '<i class="fas fa-question"></i>';
+                        cardsContainer.appendChild(placeholder);
+                    }
+                }
+            }
+            
+            // 事件监听
+            dealHandBtn.addEventListener('click', dealHandCards);
+            dealCommunityBtn.addEventListener('click', dealCommunityCard);
+            restartBtn.addEventListener('click', restartGame);
+            
+            // 初始化游戏
+            initGame();
+        });
+    </script>
+</body>
+</html>
